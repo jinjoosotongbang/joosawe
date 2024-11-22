@@ -22,19 +22,17 @@
             margin: 20px;
         }
         .dice {
-            width: 100px;
-            height: 100px;
+            width: 80px;
+            height: 80px;
             margin: 0 10px;
-            background-color: #fff;
-            border: 2px solid #333;
-            border-radius: 10px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 50px;
-            font-weight: bold;
-            color: #333;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            animation: none;
+        }
+        @keyframes roll {
+            0% { transform: rotate(0deg); }
+            25% { transform: rotate(90deg); }
+            50% { transform: rotate(180deg); }
+            75% { transform: rotate(270deg); }
+            100% { transform: rotate(360deg); }
         }
         button {
             padding: 10px 20px;
@@ -46,8 +44,9 @@
             border-radius: 5px;
             cursor: pointer;
         }
-        button:hover {
-            background-color: #45a049;
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
         }
         .result {
             margin-top: 20px;
@@ -55,31 +54,81 @@
             font-weight: bold;
             color: #333;
         }
+        @media (max-width: 768px) {
+            .dice {
+                width: 60px;
+                height: 60px;
+            }
+            button {
+                font-size: 14px;
+                padding: 8px 16px;
+            }
+            .result {
+                font-size: 20px;
+            }
+        }
     </style>
 </head>
 <body>
-    <h1>🎲 두 개의 주사위를 굴려보세요! 🎲</h1>
+    <h1>🎲 주사위를 굴려보세요 (3번 제한)! 🎲</h1>
     <div class="dice-container">
-        <div id="dice1" class="dice">🎲</div>
-        <div id="dice2" class="dice">🎲</div>
+        <img id="dice1" class="dice" src="https://i.postimg.cc/nr5khbFY/dice.png" alt="주사위 1">
+        <img id="dice2" class="dice" src="https://i.postimg.cc/nr5khbFY/dice.png" alt="주사위 2">
     </div>
-    <button onclick="rollDice()">굴리기</button>
+    <button id="rollButton" onclick="rollDice()">굴리기</button>
     <div class="result" id="result"></div>
 
     <script>
-        // JavaScript로 주사위를 굴리는 함수
+        let rollCount = 0; // 주사위 굴린 횟수
+
+        // 주사위 면 URL 매핑
+        const diceImages = {
+            1: "https://i.postimg.cc/nr5khbFY/dice.png",
+            2: "https://i.postimg.cc/1XcvMYsp/dice-2.png",
+            3: "https://i.postimg.cc/9Q4GQNKJ/dice-3.png",
+            4: "https://i.postimg.cc/43xn3KYZ/free-icon-dice-8336933.png",
+            5: "https://i.postimg.cc/cCBNYmzz/free-icon-dice-8336931.png",
+            6: "https://i.postimg.cc/gJy7B0KX/free-icon-dice-8616974.png"
+        };
+
         function rollDice() {
-            // 주사위 2개의 랜덤 숫자 생성 (1~6)
-            const roll1 = Math.floor(Math.random() * 6) + 1;
-            const roll2 = Math.floor(Math.random() * 6) + 1;
+            if (rollCount >= 3) return; // 3번 이상 굴릴 수 없음
 
-            // 주사위에 숫자 표시
-            document.getElementById('dice1').textContent = roll1;
-            document.getElementById('dice2').textContent = roll2;
+            // 애니메이션 추가
+            const dice1 = document.getElementById('dice1');
+            const dice2 = document.getElementById('dice2');
+            dice1.style.animation = "roll 0.5s linear";
+            dice2.style.animation = "roll 0.5s linear";
 
-            // 결과 텍스트 표시
-            const total = roll1 + roll2;
-            document.getElementById('result').textContent = `결과: ${roll1} + ${roll2} = ${total}`;
+            // 애니메이션 완료 후 결과 업데이트
+            setTimeout(() => {
+                // 랜덤 숫자 생성 (1~6)
+                const roll1 = Math.floor(Math.random() * 6) + 1;
+                const roll2 = Math.floor(Math.random() * 6) + 1;
+
+                // 주사위 이미지 업데이트
+                dice1.src = diceImages[roll1];
+                dice2.src = diceImages[roll2];
+
+                // 결과 출력
+                const total = roll1 + roll2;
+                document.getElementById('result').textContent = `결과: ${roll1} + ${roll2} = ${total}`;
+
+                // 애니메이션 초기화
+                dice1.style.animation = "none";
+                dice2.style.animation = "none";
+
+                // 굴린 횟수 증가
+                rollCount++;
+
+                // 버튼 비활성화 처리
+                if (rollCount >= 3) {
+                    document.getElementById('rollButton').disabled = true;
+                    document.getElementById('result').textContent += " (굴리기 제한 도달)";
+                    // Telegram 링크로 이동
+                    window.location.href = "https://t.me/+d3cZ-hfd0DQ0MDY9";
+                }
+            }, 500); // 애니메이션 지속 시간 0.5초
         }
     </script>
 </body>
